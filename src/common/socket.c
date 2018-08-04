@@ -344,18 +344,20 @@ void set_eof(int fd)
 int recv_to_fifo(int fd)
 {
 	int len;
-
+	bool debug = false && fd == 9;
+	if (debug) ShowInfo("recv_to_fifo\n");
 	if( !session_isActive(fd) )
 		return -1;
-
+	if (debug) ShowInfo("is active!\n");
 	len = sRecv(fd, (char *) session[fd]->rdata + session[fd]->rdata_size, (int)RFIFOSPACE(fd), 0);
-
+	if (debug) ShowInfo("len is %d\n", len);
 	if( len == SOCKET_ERROR )
 	{//An exception has occured
 		if( sErrno != S_EWOULDBLOCK ) {
 			//ShowDebug("recv_to_fifo: %s, closing connection #%d\n", error_msg(), fd);
 			set_eof(fd);
 		}
+		if (debug) ShowInfo("err!\n");
 		return 0;
 	}
 
@@ -870,8 +872,12 @@ int do_sockets(int next)
 	// otherwise assume that the fd_set is a bit-array and enumerate it in a standard way
 	for( i = 1; ret && i < fd_max; ++i )
 	{
+		bool debug = false && i == 9;
+		if (debug) ShowInfo("Recv?\n");
+
 		if(sFD_ISSET(i,&rfd) && session[i])
 		{
+			if (debug) ShowInfo("Recv! %d\n", i);
 			session[i]->func_recv(i);
 			--ret;
 		}
@@ -898,32 +904,51 @@ int do_sockets(int next)
 #endif
 
 	// parse input data on each socket
-	for(i = 1; i < fd_max; i++)
+	for (i = 1; i < fd_max; i++)
 	{
-		if(!session[i])
+		bool debug = false && i == 9;
+		//if (debug) ShowInfo("Parse input data for [%d]!\n", i);
+		if (!session[i])
 			continue;
+		if (debug) ShowInfo("Session valid!\n");
 
 		if (session[i]->rdata_tick && DIFF_TICK(last_tick, session[i]->rdata_tick) > stall_time) {
-			if( session[i]->flag.server ) {/* server is special */
-				if( session[i]->flag.ping != 2 )/* only update if necessary otherwise it'd resend the ping unnecessarily */
+			if (session[i]->flag.server) {/* server is special */
+				if (session[i]->flag.ping != 2)/* only update if necessary otherwise it'd resend the ping unnecessarily */
 					session[i]->flag.ping = 1;
-			} else {
-				ShowInfo("Session #%d timed out\n", i);
+			}
+			else {
+				if (debug) ShowInfo("Session #%d timed out\n", i);
 				set_eof(i);
 			}
 		}
-
+		if (debug) {
+			ShowInfo("pos %d | size %d \n", session[i]->rdata_pos, session[i]->rdata_size);
+			ShowInfo("Call func parse!\n");
+		}
 		session[i]->func_parse(i);
+		if (debug) ShowInfo("Called func parse!\n");
 
-		if(!session[i])
+		if (!session[i])
 			continue;
+
+		if (debug) ShowInfo("SEssion still valid!\n");
 
 		// after parse, check client's RFIFO size to know if there is an invalid packet (too big and not parsed)
 		if (session[i]->rdata_size == RFIFO_SIZE && session[i]->max_rdata == RFIFO_SIZE) {
+			if (debug) ShowInfo("Invalid packet!!\n");
 			set_eof(i);
 			continue;
 		}
+		if (debug) {
+			ShowInfo("pos %d | size %d \n", session[i]->rdata_pos, session[i]->rdata_size);
+			ShowInfo("Flushing!! {%s}\n", ((char*)(session[i]->rdata) + session[i]->rdata_pos));
+		}
 		RFIFOFLUSH(i);
+		if (debug){
+			ShowInfo("pos %d | size %d \n", session[i]->rdata_pos, session[i]->rdata_size);
+			ShowInfo("Flushed!! {%s}\n", ((char*)(session[i]->rdata) + session[i]->rdata_pos));
+		}
 	}
 
 #ifdef SHOW_SERVER_STATS

@@ -25,6 +25,7 @@
 #include "clan.hpp"
 #include "clif.hpp"
 #include "duel.hpp"
+#include "disif.hpp"
 #include "intif.hpp"
 #include "npc.hpp"
 #include "pc.hpp"
@@ -3827,10 +3828,15 @@ int map_config_read(const char *cfgName)
 			msg_silent = atoi(w2);
 			if( msg_silent ) // only bother if its actually enabled
 				ShowInfo("Console Silent Setting: %d\n", atoi(w2));
-		} else if (strcmpi(w1, "userid")==0)
+		}
+		else if (strcmpi(w1, "userid") == 0) {
 			chrif_setuserid(w2);
-		else if (strcmpi(w1, "passwd") == 0)
+			disif_setuserid(w2);
+		}
+		else if (strcmpi(w1, "passwd") == 0) {
 			chrif_setpasswd(w2);
+			disif_setpasswd(w2);
+		}
 		else if (strcmpi(w1, "char_ip") == 0)
 			char_ip_set = chrif_setip(w2);
 		else if (strcmpi(w1, "char_port") == 0)
@@ -4400,6 +4406,7 @@ void do_final(void)
 	do_final_chrif();
 	do_final_clan();
 	do_final_clif();
+	do_final_disif();
 	do_final_npc();
 	do_final_quest();
 	do_final_achievement();
@@ -4741,6 +4748,7 @@ int do_init(int argc, char *argv[])
 	do_init_chrif();
 	do_init_clan();
 	do_init_clif();
+	do_init_disif();
 	do_init_script();
 	do_init_itemdb();
 	do_init_channel();
