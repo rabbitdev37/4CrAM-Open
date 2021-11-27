@@ -6,7 +6,7 @@ ifeq ($(HAVE_MYSQL),yes)
 	ALL_DEPENDS=server tools
 	SERVER_DEPENDS=common login char map import
 	COMMON_DEPENDS=libconfig yaml-cpp
-	LOGIN_DEPENDS=libconfig common
+	LOGIN_DEPENDS=libconfig common libbcrypt
 	CHAR_DEPENDS=libconfig common yaml-cpp
 	MAP_DEPENDS=libconfig common yaml-cpp
 else
@@ -58,6 +58,9 @@ tools:
 yaml-cpp:
 	@$(MAKE) -C 3rdparty/yaml-cpp
 
+libbcrypt:
+	@${MAKE} -C 3rdparty/libbcrypt
+
 import:
 # 1) create conf/import folder
 # 2) add missing files
@@ -75,6 +78,7 @@ import:
 
 clean:
 	@$(MAKE) -C src/common $@
+	@$(MAKE) -C 3rdparty/libbcrypt $@
 	@$(MAKE) -C 3rdparty/libconfig $@
 	@$(MAKE) -C 3rdparty/yaml-cpp $@
 	@$(MAKE) -C src/login $@
@@ -86,6 +90,7 @@ help:
 	@echo "most common targets are 'all' 'server' 'conf' 'clean' 'help'"
 	@echo "possible targets are:"
 	@echo "'common'      - builds object files used for the three servers"
+	@echo "'libbcrypt'   - builds object files of libbcrypt"
 	@echo "'libconfig'   - builds object files of libconfig"
 	@echo "'yaml-cpp'    - builds object files of yaml-cpp"
 	@echo "'login'       - builds login server"
