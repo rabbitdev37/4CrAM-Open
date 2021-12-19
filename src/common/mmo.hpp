@@ -88,14 +88,20 @@ typedef uint32 t_itemid;
 #define MAX_CLAN 500
 #define MAX_CLANALLIANCE 6
 
+#ifdef RENEWAL
+	#define MAX_WEAPON_LEVEL 5
+	#define MAX_ARMOR_LEVEL 2
+#else
+	#define MAX_WEAPON_LEVEL 4
+	#define MAX_ARMOR_LEVEL 1
+#endif
+
 // for produce
 #define MIN_ATTRIBUTE 0
 #define MAX_ATTRIBUTE 4
 #define ATTRIBUTE_NORMAL 0
 #define MIN_STAR 0
 #define MAX_STAR 3
-
-#define MAX_STATUS_TYPE 5
 
 const t_itemid WEDDING_RING_M = 2634;
 const t_itemid WEDDING_RING_F = 2635;
@@ -241,12 +247,6 @@ struct quest {
 	e_quest_state state;             ///< Current quest state
 };
 
-struct s_item_randomoption {
-	short id;
-	short value;
-	char param;
-};
-
 /// Achievement log entry
 struct achievement {
 	int achievement_id;                    ///< Achievement ID
@@ -255,6 +255,17 @@ struct achievement {
 	time_t rewarded;                       ///< Received reward?
 	int score;                             ///< Amount of points achievement is worth
 };
+
+// NetBSD 5 and Solaris don't like pragma pack but accept the packed attribute
+#if !defined( sun ) && ( !defined( __NETBSD__ ) || __NetBSD_Version__ >= 600000000 )
+	#pragma pack( push, 1 )
+#endif
+
+struct s_item_randomoption {
+	short id;
+	short value;
+	char param;
+} __attribute__((packed));
 
 struct item {
 	int id;
@@ -271,7 +282,12 @@ struct item {
 	uint64 unique_id;
 	unsigned int equipSwitch; // location(s) where item is equipped for equip switching (using enum equip_pos for bitmasking)
 	uint8 enchantgrade;
-};
+} __attribute__((packed));
+
+// NetBSD 5 and Solaris don't like pragma pack but accept the packed attribute
+#if !defined( sun ) && ( !defined( __NETBSD__ ) || __NetBSD_Version__ >= 600000000 )
+	#pragma pack( pop )
+#endif
 
 //Equip position constants
 enum equip_pos : uint32 {
@@ -526,6 +542,7 @@ struct mmo_charstatus {
 	char name[NAME_LENGTH];
 	unsigned int base_level,job_level;
 	unsigned short str,agi,vit,int_,dex,luk;
+	unsigned short pow,sta,wis,spl,con,crt;
 	unsigned char slot,sex;
 
 	uint32 mapip;
@@ -705,7 +722,7 @@ struct guild_castle {
 	int castle_id;
 	int mapindex;
 	char castle_name[NAME_LENGTH];
-	char castle_event[EVENT_NAME_LENGTH];
+	char castle_event[NPC_NAME_LENGTH];
 	int guild_id;
 	int economy;
 	int defense;
@@ -1081,7 +1098,9 @@ struct clan{
 	#ifndef ENABLE_SC_SAVING
 	#warning "Cart won't be able to be saved for relog"
 	#endif
-#if PACKETVER >= 20150826
+#if PACKETVER >= 20191106
+	#define MAX_CARTS 13		// used for another new cart design
+#elif PACKETVER >= 20150826
 	#define MAX_CARTS 12		// used for 3 new cart design
 #else
 	#define MAX_CARTS 9

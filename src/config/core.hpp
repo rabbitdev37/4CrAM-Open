@@ -43,7 +43,7 @@
 /// Uncomment to enable real-time server stats (in and out data and ram usage).
 //#define SHOW_SERVER_STATS
 
-/// Uncomment to enable the job base HP/SP table (job_basehpsp_db.txt)
+/// Comment to disable the job base HP/SP/AP table (job_basepoints.yml)
 #define HP_SP_TABLES
 
 /// Uncomment to enable VIP system.
@@ -68,6 +68,9 @@
 /// Comment to disable warnings for deprecated script constants
 #define SCRIPT_CONSTANT_DEPRECATION
 
+// Uncomment to have the map server generate the client's navigation files
+//#define GENERATE_NAVI
+
 // Uncomment to enable deprecated support for Windows XP and lower
 // Note:
 // Windows XP still has 32bit ticks. This means you need to restart your operating system before time
@@ -80,6 +83,9 @@
 // cause unexpected behavior.
 // Do NOT create any issues or ask for help with these compilers.
 //#define DEPRECATED_COMPILER_SUPPORT
+
+/// Uncomment for use with Nemo patch ExtendCashShopPreview
+//#define ENABLE_CASHSHOP_PREVIEW_PATCH
 
 /**
  * No settings past this point
